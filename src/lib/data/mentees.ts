@@ -48,3 +48,18 @@ export async function fetchAssignedMentees(mentorId: string): Promise<AssignedMe
     };
   });
 }
+
+/** Mentor accepts (active) or declines (ended) a match request. */
+export async function setMatchStatus(
+  mentorId: string,
+  menteeId: string,
+  status: MatchStatus
+): Promise<string | null> {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("mentee_mentor_matches")
+    .update({ status })
+    .eq("mentor_id", mentorId)
+    .eq("mentee_id", menteeId);
+  return error?.message ?? null;
+}
