@@ -146,6 +146,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password: input.password,
         options: {
+          emailRedirectTo:
+            typeof window !== "undefined" ? `${window.location.origin}/login` : undefined,
           data: {
             full_name: input.fullName.trim(),
             matric_number: input.matricNumber.trim(),
@@ -214,6 +216,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password: input.password,
         options: {
+          emailRedirectTo:
+            typeof window !== "undefined" ? `${window.location.origin}/login` : undefined,
           data: {
             full_name: input.fullName.trim(),
             matric_number: input.matricNumber.trim(),
