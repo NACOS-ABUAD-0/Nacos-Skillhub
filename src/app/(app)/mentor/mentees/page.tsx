@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { PageShell, SoftPanel, DataTable, ProgressBar, StatusBadge, EmptyState, SoftButton, type Column } from "@/components/app/ui";
+import { MenteeProgressPanel } from "@/components/app/MenteeProgressPanel";
 import { useAuth } from "@/lib/auth/auth-context";
 import { fetchAssignedMentees, setMatchStatus, type AssignedMentee } from "@/lib/data/mentees";
 import type { MatchStatus } from "@/lib/supabase/database.types";
@@ -12,14 +14,19 @@ export default function MentorMenteesPage() {
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [progressFor, setProgressFor] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    if (!user) return;
+    setMentees(await fetchAssignedMentees(user.id));
+    setLoading(false);
+  }, [user]);
 
   useEffect(() => {
-    if (!user) return;
-    fetchAssignedMentees(user.id).then((m) => {
-      setMentees(m);
-      setLoading(false);
-    });
-  }, [user]);
+    load();
+  }, [load]);
+
+  const selected = mentees.find((m) => m.id === progressFor && m.matchStatus === "active");
 
   const respond = async (menteeId: string, status: MatchStatus) => {
     if (!user) return;
@@ -82,6 +89,18 @@ export default function MentorMenteesPage() {
               Decline
             </SoftButton>
           </div>
+        ) : m.matchStatus === "active" ? (
+          <div className="flex gap-2">
+            <SoftButton variant="soft" onClick={() => setProgressFor(m.id)}>
+              Progress
+            </SoftButton>
+            <Link
+              href={`/mentor/messages?with=${m.id}`}
+              className="inline-flex h-10 items-center rounded-full bg-soft-muted px-4 text-sm font-semibold text-ink hover:bg-soft-raised"
+            >
+              Message
+            </Link>
+          </div>
         ) : null,
     },
   ];
@@ -101,6 +120,15 @@ export default function MentorMenteesPage() {
           {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
           <DataTable columns={columns} rows={mentees} rowKey={(m) => m.id} />
         </SoftPanel>
+      )}
+      {user && selected && selected.track !== "—" && (
+        <MenteeProgressPanel
+          key={selected.id}
+          mentorId={user.id}
+          mentee={selected}
+          onClose={() => setProgressFor(null)}
+          onChange={load}
+        />
       )}
     </PageShell>
   );

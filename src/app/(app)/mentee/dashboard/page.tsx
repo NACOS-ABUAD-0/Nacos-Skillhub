@@ -13,15 +13,20 @@ import {
 } from "@/components/app/ui";
 import { createClient } from "@/lib/supabase/client";
 import { fetchMentorDirectory, type MentorDirectoryEntry } from "@/lib/data/mentors";
+import {
+  fetchSkillPath,
+  fetchStepProgress,
+  summarizePath,
+  type PathSummary,
+} from "@/lib/data/skill-path";
 import type { Database } from "@/lib/supabase/database.types";
 
-type Milestone = Database["public"]["Tables"]["mentee_milestones"]["Row"];
 type SessionRow = Database["public"]["Tables"]["sessions"]["Row"];
 
 export default function MenteeDashboardPage() {
   const { user } = useAuth();
   const [topMentor, setTopMentor] = useState<MentorDirectoryEntry | null>(null);
-  const [milestones, setMilestones] = useState<Milestone[]>([]);
+  const [path, setPath] = useState<PathSummary | null>(null);
   const [nextSession, setNextSession] = useState<SessionRow | null>(null);
   const [unread, setUnread] = useState(0);
 
@@ -34,11 +39,11 @@ export default function MenteeDashboardPage() {
       setTopMentor(inTrack ?? mentors[0] ?? null);
     });
 
-    supabase
-      .from("mentee_milestones")
-      .select("*")
-      .eq("mentee_id", user.id)
-      .then(({ data }) => setMilestones(data ?? []));
+    if (user.track) {
+      Promise.all([fetchSkillPath(user.track), fetchStepProgress([user.id])]).then(([steps, progress]) =>
+        setPath(summarizePath(steps, progress.get(user.id)))
+      );
+    }
 
     supabase
       .from("sessions")
@@ -69,11 +74,8 @@ export default function MenteeDashboardPage() {
       });
   }, [user]);
 
-  const current = milestones.find((m) => m.status === "current");
-  const completedCount = milestones.filter((m) => m.status === "completed").length;
-  const pathProgress = milestones.length
-    ? Math.round((completedCount / milestones.length) * 100)
-    : 0;
+  const current = path?.next;
+  const pathProgress = path?.percent ?? 0;
 
   return (
     <PageShell
@@ -93,7 +95,7 @@ export default function MenteeDashboardPage() {
         <StatCard
           label="Path progress"
           value={`${pathProgress}%`}
-          hint={`${completedCount} of ${milestones.length || "0"} milestones`}
+          hint={`${path?.completed ?? 0} of ${path?.total ?? 0} steps`}
         />
         <StatCard label="Unread messages" value={unread} hint="From your mentor" />
         <StatCard label="Upcoming sessions" value={nextSession ? 1 : 0} />
@@ -102,8 +104,8 @@ export default function MenteeDashboardPage() {
       <section className="grid grid-cols-1 gap-5 xl:grid-cols-3">
         <SoftPanel
           className="xl:col-span-2"
-          title={current ? "Next milestone" : "Skill path"}
-          actions={current && <StatusBadge tone="info">In progress</StatusBadge>}
+          title={current ? "Up next on your skill path" : "Skill path"}
+          actions={current && <StatusBadge tone="info">Step {(path?.completed ?? 0) + 1}</StatusBadge>}
         >
           {current ? (
             <>
@@ -112,7 +114,7 @@ export default function MenteeDashboardPage() {
                 <p className="mt-1 text-sm text-ink/55">{current.description}</p>
               )}
               {current.due_label && (
-                <p className="mt-3 text-xs text-ink/40">Due · {current.due_label}</p>
+                <p className="mt-3 text-xs text-ink/40">{current.due_label}</p>
               )}
               <div className="mt-4">
                 <ProgressBar value={pathProgress} />
@@ -120,7 +122,9 @@ export default function MenteeDashboardPage() {
             </>
           ) : (
             <p className="text-sm text-ink/55">
-              No milestones yet — they&apos;ll appear once your mentor sets your path.
+              {path && path.total > 0
+                ? "You've completed every step on your skill path. 🎉"
+                : "Your track's mentors haven't published a skill path yet — check back soon."}
             </p>
           )}
           <Link

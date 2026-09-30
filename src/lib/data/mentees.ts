@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
 import type { MatchStatus } from "@/lib/supabase/database.types";
+import { fetchSkillPaths, fetchStepProgress, summarizePath } from "@/lib/data/skill-path";
 
 export interface AssignedMentee {
   id: string;
@@ -11,7 +12,7 @@ export interface AssignedMentee {
   matchStatus: MatchStatus;
 }
 
-/** Mentees matched to this mentor (any match status), with milestone progress. */
+/** Mentees matched to this mentor (any match status), with skill path progress. */
 export async function fetchAssignedMentees(mentorId: string): Promise<AssignedMentee[]> {
   const supabase = createClient();
   const { data: matches } = await supabase
@@ -27,23 +28,22 @@ export async function fetchAssignedMentees(mentorId: string): Promise<AssignedMe
     .select("id, full_name, level, track")
     .in("id", menteeIds);
 
-  const { data: milestones } = await supabase
-    .from("mentee_milestones")
-    .select("mentee_id, title, status")
-    .in("mentee_id", menteeIds);
+  const tracks = [...new Set((profiles ?? []).map((p) => p.track).filter((t): t is string => !!t))];
+  const [paths, progress] = await Promise.all([fetchSkillPaths(tracks), fetchStepProgress(menteeIds)]);
 
   return matches.map((match) => {
     const profile = profiles?.find((p) => p.id === match.mentee_id);
-    const own = (milestones ?? []).filter((m) => m.mentee_id === match.mentee_id);
-    const completed = own.filter((m) => m.status === "completed").length;
-    const current = own.find((m) => m.status === "current");
+    const summary = summarizePath(
+      (profile?.track && paths.get(profile.track)) || [],
+      progress.get(match.mentee_id)
+    );
     return {
       id: match.mentee_id,
       name: profile?.full_name ?? "Unknown",
       level: profile?.level ?? "—",
       track: profile?.track ?? "—",
-      progress: own.length ? Math.round((completed / own.length) * 100) : 0,
-      nextMilestone: current?.title ?? "—",
+      progress: summary.percent,
+      nextMilestone: summary.next?.title ?? "—",
       matchStatus: match.status,
     };
   });

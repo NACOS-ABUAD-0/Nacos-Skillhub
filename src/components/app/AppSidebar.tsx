@@ -85,6 +85,7 @@ export function mentorNav(user: MockUser): NavGroup[] {
       label: "Mentoring",
       items: [
         { href: "/mentor/mentees", label: "Mentees", icon: Users },
+        { href: "/mentor/path", label: "Skill path", icon: Route },
         { href: "/mentor/projects", label: "Mini-projects", icon: Code2 },
         { href: "/mentor/reviews", label: "Reviews", icon: GitPullRequest },
         { href: "/mentor/sessions", label: "Sessions", icon: Calendar },

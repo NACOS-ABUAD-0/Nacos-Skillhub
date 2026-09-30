@@ -1,94 +1,70 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckCircle2, Circle, Lock } from "lucide-react";
-import { PageShell, SoftPanel, StatusBadge, EmptyState } from "@/components/app/ui";
+import { PageShell, SoftPanel, EmptyState, ProgressBar } from "@/components/app/ui";
+import { SkillRoadmap } from "@/components/app/SkillRoadmap";
 import { useAuth } from "@/lib/auth/auth-context";
-import { createClient } from "@/lib/supabase/client";
-import type { Database } from "@/lib/supabase/database.types";
-
-type Milestone = Database["public"]["Tables"]["mentee_milestones"]["Row"];
+import {
+  fetchSkillPath,
+  fetchStepProgress,
+  summarizePath,
+  type SkillStep,
+  type StepProgress,
+} from "@/lib/data/skill-path";
 
 export default function MenteePathPage() {
   const { user } = useAuth();
-  const [milestones, setMilestones] = useState<Milestone[]>([]);
+  const track = user?.track;
+  const [steps, setSteps] = useState<SkillStep[]>([]);
+  const [progress, setProgress] = useState<StepProgress>(new Map());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
-    const supabase = createClient();
-    supabase
-      .from("mentee_milestones")
-      .select("*")
-      .eq("mentee_id", user.id)
-      .order("updated_at", { ascending: true })
-      .then(({ data }) => {
-        setMilestones(data ?? []);
-        setLoading(false);
-      });
-  }, [user]);
+    if (!user || !track) return;
+    Promise.all([fetchSkillPath(track), fetchStepProgress([user.id])]).then(([path, byMentee]) => {
+      setSteps(path);
+      setProgress(byMentee.get(user.id) ?? new Map());
+      setLoading(false);
+    });
+  }, [user, track]);
 
-  if (!loading && milestones.length === 0) {
+  if (!track) {
     return (
-      <PageShell title="Skill path" description="Semester-aligned milestones with PR checkpoints.">
+      <PageShell title="Skill path" description="Your roadmap for the semester.">
         <EmptyState
-          title="No milestones yet"
-          description="Your mentor sets milestones once you're matched — check back soon."
+          title="Pick a track first"
+          description="Take the quiz or choose a track in Settings to see what you'll learn."
         />
       </PageShell>
     );
   }
 
+  if (!loading && steps.length === 0) {
+    return (
+      <PageShell title="Skill path" description={`Your ${track} roadmap.`}>
+        <EmptyState
+          title="Roadmap coming soon"
+          description={`${track} mentors haven't published the skill path yet — check back soon.`}
+        />
+      </PageShell>
+    );
+  }
+
+  const summary = summarizePath(steps, progress);
+
   return (
     <PageShell
       title="Skill path"
-      description="Semester-aligned milestones with PR checkpoints."
+      description={`What you'll learn in ${track}, step by step — set by your track's mentors.`}
     >
-      <SoftPanel title="Milestones">
-        <ol className="relative ml-3 space-y-0 border-l border-soft">
-          {milestones.map((ms) => {
-            const Icon =
-              ms.status === "completed"
-                ? CheckCircle2
-                : ms.status === "current"
-                  ? Circle
-                  : Lock;
-            return (
-              <li key={ms.id} className="relative pb-8 pl-8 last:pb-0">
-                <span className="absolute -left-[9px] top-1 bg-soft-surface">
-                  <Icon
-                    className={`h-4 w-4 ${
-                      ms.status === "completed"
-                        ? "text-forest"
-                        : ms.status === "current"
-                          ? "text-gold"
-                          : "text-ink/30"
-                    }`}
-                  />
-                </span>
-                <div className="space-y-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="font-semibold text-ink">{ms.title}</h3>
-                    <StatusBadge
-                      tone={
-                        ms.status === "completed"
-                          ? "success"
-                          : ms.status === "current"
-                            ? "warning"
-                            : "neutral"
-                      }
-                    >
-                      {ms.status}
-                    </StatusBadge>
-                    {ms.pr_required && <StatusBadge tone="info">PR required</StatusBadge>}
-                  </div>
-                  {ms.description && <p className="text-sm text-ink/55">{ms.description}</p>}
-                  {ms.due_label && <p className="text-[11px] text-ink/40">{ms.due_label}</p>}
-                </div>
-              </li>
-            );
-          })}
-        </ol>
+      <SoftPanel
+        title={`${track} roadmap`}
+        subtitle={`${summary.completed} of ${summary.total} steps completed`}
+      >
+        <div className="mb-6 max-w-sm">
+          <ProgressBar value={summary.percent} />
+        </div>
+        <SkillRoadmap steps={steps} statusFor={(step) => progress.get(step.id)} />
       </SoftPanel>
     </PageShell>
   );

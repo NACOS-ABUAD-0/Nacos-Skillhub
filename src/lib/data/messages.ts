@@ -4,77 +4,114 @@ export interface ThreadMessage {
   id: string;
   from: "me" | "peer";
   text: string;
-  time: string;
+  createdAt: string;
 }
 
-export interface ThreadSummary {
-  id: string;
+/**
+ * One inbox row per person the user can talk to: everyone they're actively
+ * matched with, plus anyone they already have a thread with. `threadId` is
+ * null until the first message is sent.
+ */
+export interface Conversation {
   peerId: string;
   peerName: string;
   peerRole: string;
+  threadId: string | null;
   lastMessage: string;
-  time: string;
+  lastAt: string | null;
+  unread: number;
   messages: ThreadMessage[];
 }
 
-/** All threads the current user participates in, each with its full message list. */
-export async function fetchThreads(userId: string): Promise<ThreadSummary[]> {
+export async function fetchConversations(userId: string): Promise<Conversation[]> {
   const supabase = createClient();
-  const { data: threads } = await supabase
-    .from("message_threads")
-    .select("*")
-    .or(`participant_a.eq.${userId},participant_b.eq.${userId}`);
+  const [{ data: threads }, { data: matches }] = await Promise.all([
+    supabase
+      .from("message_threads")
+      .select("*")
+      .or(`participant_a.eq.${userId},participant_b.eq.${userId}`),
+    supabase
+      .from("mentee_mentor_matches")
+      .select("mentor_id, mentee_id")
+      .eq("status", "active")
+      .or(`mentor_id.eq.${userId},mentee_id.eq.${userId}`),
+  ]);
 
-  if (!threads?.length) return [];
+  const threadByPeer = new Map(
+    (threads ?? []).map((t) => [t.participant_a === userId ? t.participant_b : t.participant_a, t.id])
+  );
+  const peerIds = [
+    ...new Set([
+      ...threadByPeer.keys(),
+      ...(matches ?? []).map((m) => (m.mentor_id === userId ? m.mentee_id : m.mentor_id)),
+    ]),
+  ];
+  if (!peerIds.length) return [];
 
-  const peerIds = threads.map((t) => (t.participant_a === userId ? t.participant_b : t.participant_a));
-  const { data: peers } = await supabase
-    .from("profiles")
-    .select("id, full_name, role")
-    .in("id", peerIds);
+  const [{ data: peers }, { data: allMessages }] = await Promise.all([
+    supabase.from("profiles").select("id, full_name, role").in("id", peerIds),
+    supabase
+      .from("messages")
+      .select("*")
+      .in("thread_id", [...threadByPeer.values()])
+      .order("created_at", { ascending: true }),
+  ]);
   const peerMap = new Map((peers ?? []).map((p) => [p.id, p]));
 
-  const { data: allMessages } = await supabase
-    .from("messages")
-    .select("*")
-    .in(
-      "thread_id",
-      threads.map((t) => t.id)
-    )
-    .order("created_at", { ascending: true });
-
-  return threads.map((t) => {
-    const peerId = t.participant_a === userId ? t.participant_b : t.participant_a;
-    const peer = peerMap.get(peerId);
-    const messages = (allMessages ?? [])
-      .filter((m) => m.thread_id === t.id)
-      .map((m) => ({
+  return peerIds
+    .map((peerId) => {
+      const threadId = threadByPeer.get(peerId) ?? null;
+      const raw = (allMessages ?? []).filter((m) => m.thread_id === threadId);
+      const messages = raw.map((m) => ({
         id: m.id,
         from: (m.sender_id === userId ? "me" : "peer") as "me" | "peer",
         text: m.body,
-        time: new Date(m.created_at).toLocaleString(),
+        createdAt: m.created_at,
       }));
-    const last = messages[messages.length - 1];
-    return {
-      id: t.id,
-      peerId,
-      peerName: peer?.full_name ?? "Unknown",
-      peerRole: peer?.role ?? "",
-      lastMessage: last?.text ?? "",
-      time: last?.time ?? "",
-      messages,
-    };
-  });
+      const last = messages[messages.length - 1];
+      const peer = peerMap.get(peerId);
+      return {
+        peerId,
+        peerName: peer?.full_name ?? "Unknown",
+        peerRole: peer?.role ?? "",
+        threadId,
+        lastMessage: last?.text ?? "",
+        lastAt: last?.createdAt ?? null,
+        unread: raw.filter((m) => m.sender_id !== userId && !m.read_at).length,
+        messages,
+      };
+    })
+    .sort((a, b) => (b.lastAt ?? "").localeCompare(a.lastAt ?? "") || a.peerName.localeCompare(b.peerName));
 }
 
-export async function sendMessage(threadId: string, senderId: string, body: string) {
+/** Sends a message, creating the thread on first contact. Returns the thread id. */
+export async function sendMessage(userId: string, conversation: Conversation, body: string): Promise<string> {
+  const threadId = conversation.threadId ?? (await getOrCreateThread(userId, conversation.peerId));
   const supabase = createClient();
   const { error } = await supabase.from("messages").insert({
     thread_id: threadId,
-    sender_id: senderId,
+    sender_id: userId,
     body,
   });
   if (error) throw new Error(error.message);
+  return threadId;
+}
+
+export async function markThreadRead(threadId: string) {
+  const supabase = createClient();
+  await supabase.rpc("mark_thread_read", { p_thread: threadId });
+}
+
+/** Calls `onChange` whenever a message the user can see is inserted. */
+export function subscribeToMessages(userId: string, onChange: () => void): () => void {
+  const supabase = createClient();
+  const channel = supabase
+    .channel(`messages:${userId}`)
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, onChange)
+    .subscribe();
+  return () => {
+    supabase.removeChannel(channel);
+  };
 }
 
 /** Finds or creates the 1:1 thread between the current user and a peer. */
@@ -94,6 +131,20 @@ export async function getOrCreateThread(userId: string, peerId: string): Promise
     .insert({ participant_a: userId, participant_b: peerId })
     .select("id")
     .single();
-  if (error || !created) throw new Error(error?.message ?? "Failed to start conversation.");
+  if (error || !created) {
+    throw new Error(
+      error?.code === "42501"
+        ? "You can only message people you're actively matched with."
+        : error?.message ?? "Failed to start conversation."
+    );
+  }
   return created.id;
+}
+
+export function formatMessageTime(iso: string): string {
+  const d = new Date(iso);
+  const sameDay = d.toDateString() === new Date().toDateString();
+  return sameDay
+    ? d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+    : d.toLocaleDateString([], { month: "short", day: "numeric" });
 }

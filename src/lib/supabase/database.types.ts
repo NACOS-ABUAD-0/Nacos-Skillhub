@@ -1,4 +1,4 @@
-// Hand-written to match supabase/migrations/ (0001–0003).
+// Hand-written to match supabase/migrations/ (0001–0005).
 // Once the project is provisioned, prefer regenerating with:
 //   npx supabase gen types typescript --project-id <ref> > src/lib/supabase/database.types.ts
 //
@@ -98,6 +98,9 @@ interface MilestoneTemplateRow {
   order_index: number;
   due_label: string | null;
   pr_required: boolean;
+  resource_url: string | null;
+  created_by: string | null;
+  created_at: string;
 }
 
 interface MenteeMilestoneRow {
@@ -239,6 +242,10 @@ export interface Database {
           p_level: string;
           p_specialization: string;
         };
+        Returns: undefined;
+      };
+      mark_thread_read: {
+        Args: { p_thread: string };
         Returns: undefined;
       };
     };
