@@ -18,30 +18,40 @@ const QUESTIONS = [
     id: 1,
     title: "What excites you most?",
     options: [
-      { label: "Securing systems", track: "Cybersecurity" },
-      { label: "Cloud & pipelines", track: "Cloud" },
-      { label: "Web & mobile UI", track: "Fullstack" },
-      { label: "AI & data", track: "AI" },
+      { label: "Apps people carry in their pocket", track: "Mobile Dev" },
+      { label: "Finding and fixing security holes", track: "Cybersecurity" },
+      { label: "Interfaces people love to use", track: "UI/UX" },
+      { label: "Keeping data fast and reliable", track: "Database (SQL)" },
     ],
   },
   {
     id: 2,
     title: "Preferred hands-on work?",
     options: [
-      { label: "Threat analysis", track: "Cybersecurity" },
-      { label: "Infrastructure as code", track: "DevOps" },
-      { label: "Shipping product features", track: "Fullstack" },
-      { label: "Model experiments", track: "AI" },
+      { label: "Building responsive web pages", track: "Frontend" },
+      { label: "Designing APIs and server logic", track: "Backend" },
+      { label: "Writing queries and designing schemas", track: "Database (SQL)" },
+      { label: "Threat analysis and pentesting", track: "Cybersecurity" },
     ],
   },
   {
     id: 3,
+    title: "Which tool would you open first?",
+    options: [
+      { label: "Figma", track: "UI/UX" },
+      { label: "React / Next.js", track: "Frontend" },
+      { label: "Flutter / React Native", track: "Mobile Dev" },
+      { label: "Node.js / Django", track: "Backend" },
+    ],
+  },
+  {
+    id: 4,
     title: "Semester goal?",
     options: [
-      { label: "Internship prep", track: "Fullstack" },
-      { label: "Strong FYP", track: "AI" },
-      { label: "Campus leadership", track: "Cloud" },
-      { label: "Open-source PRs", track: "DevOps" },
+      { label: "Ship a product end-to-end", track: "Fullstack" },
+      { label: "Publish an app to the Play Store", track: "Mobile Dev" },
+      { label: "Earn a security certification", track: "Cybersecurity" },
+      { label: "Internship-ready web portfolio", track: "Fullstack" },
     ],
   },
 ];
@@ -85,7 +95,7 @@ export default function MenteeQuizPage() {
   return (
     <PageShell
       title="Diagnostic quiz"
-      description="Three quick questions to refine your track recommendation."
+      description="Four quick questions to refine your track recommendation."
     >
       <SoftPanel className="max-w-xl">
         {!done ? (

@@ -29,18 +29,18 @@ const mentors: Mentor[] = [
   {
     id: "1",
     name: "Emeka Okafor",
-    role: "Senior Cloud & Security Lead",
+    role: "Senior Cybersecurity Lead",
     department: "Computer Science",
     level: "Alumni (First Class)",
     institution: "ABUAD '23 · Ex-Interswitch Intern",
     avatarBg: "bg-forest",
     initials: "EO",
-    headlineSkill: "Cloud Security & AWS",
+    headlineSkill: "Network Security & Pen-Testing",
     rating: 4.96,
     studentsCount: 24,
     availability: "Available this week",
-    tags: ["AWS Solutions", "Terraform", "Pen-Testing", "Linux"],
-    bio: "Helped 18 mentees pass their AWS Cloud Practitioner and land SIWES placements. Let's build real infrastructure together.",
+    tags: ["Pen-Testing", "Burp Suite", "Linux", "Network Security"],
+    bio: "Helped 18 mentees earn their first security certifications and land SIWES placements. Let's break (and fix) real systems together.",
   },
   {
     id: "2",
@@ -61,22 +61,22 @@ const mentors: Mentor[] = [
   {
     id: "3",
     name: "Amina Yusuf",
-    role: "AI / ML Research & Data Science",
+    role: "Mobile Dev & UI/UX Lead",
     department: "Computer Science",
     level: "400L Senior",
-    institution: "ABUAD · DeepLearning.AI Ambassador",
+    institution: "ABUAD · Flutter Community Lead",
     avatarBg: "bg-forest",
     initials: "AY",
-    headlineSkill: "Machine Learning & PyTorch",
+    headlineSkill: "Flutter & Figma",
     rating: 4.98,
     studentsCount: 19,
     availability: "Available this week",
-    tags: ["PyTorch", "Computer Vision", "FastAPI", "Pandas"],
-    bio: "Guiding students through hands-on neural network implementations and high-distinction Final Year Project prototypes.",
+    tags: ["Flutter", "Figma", "Firebase", "Design Systems"],
+    bio: "Guiding students from Figma prototype to Play Store release, and shaping high-distinction Final Year Project apps.",
   },
 ];
 
-const filterCategories = ["All Tracks", "Cloud & DevOps", "Cybersecurity", "Fullstack Web", "AI / ML"];
+const filterCategories = ["All Tracks", "Mobile Dev", "Cybersecurity", "Frontend", "Backend", "UI/UX", "Database (SQL)", "Fullstack"];
 
 export default function MentorPreview({ onOpenAuth }: MentorPreviewProps) {
   const [selectedFilter, setSelectedFilter] = useState("All Tracks");

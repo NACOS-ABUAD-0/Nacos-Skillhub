@@ -32,9 +32,9 @@ const illustrationSlides: IllustrationSlide[] = [
   {
     id: 1,
     src: "/images/undraw_in-the-zone_07y7.svg",
-    category: "DevOps & Cloud Infrastructure",
+    category: "Backend & Database Systems",
     headline: "Ship production-ready code with confidence.",
-    subhead: "Containerize applications with Docker, automate CI/CD pipelines, and write resilient cloud APIs without getting stuck in tutorial hell.",
+    subhead: "Design clean SQL schemas, write resilient APIs, and build the server logic behind real products without getting stuck in tutorial hell.",
     icon: <Terminal className="w-4 h-4" />,
   },
   {
@@ -64,15 +64,13 @@ const illustrationSlides: IllustrationSlide[] = [
 ];
 
 const skillTags = [
-  "Cybersecurity",
-  "Cloud Computing",
-  "DevOps",
-  "UI/UX Design",
-  "Data Science",
   "Mobile Dev",
-  "AI / Machine Learning",
-  "Fullstack Web",
-  "Embedded Systems",
+  "Cybersecurity",
+  "Frontend",
+  "Backend",
+  "UI/UX Design",
+  "Database (SQL)",
+  "Fullstack",
 ];
 
 export default function Hero({ onOpenQuiz, onOpenAuth }: HeroProps) {
@@ -217,14 +215,13 @@ export default function Hero({ onOpenQuiz, onOpenAuth }: HeroProps) {
                 <div key={loopIdx} className="flex items-center gap-6 sm:gap-8 shrink-0">
                   {[
                     "NACOS ABUAD",
+                    "MOBILE DEV",
                     "CYBERSECURITY",
-                    "CLOUD COMPUTING",
+                    "FRONTEND",
+                    "BACKEND",
                     "UI/UX DESIGN",
-                    "DEVOPS",
-                    "AI & MACHINE LEARNING",
-                    "FULLSTACK WEB",
-                    "EMBEDDED SYSTEMS",
-                    "DATA SCIENCE",
+                    "DATABASE MANAGEMENT (SQL)",
+                    "FULLSTACK",
                   ].map((track, trackIdx) => (
                     <div key={trackIdx} className="flex items-center gap-6 sm:gap-8">
                       <span className="font-mono text-xs sm:text-sm font-semibold tracking-wider text-[#71717A] uppercase whitespace-nowrap">

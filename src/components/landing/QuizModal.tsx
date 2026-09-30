@@ -32,25 +32,25 @@ const questions: Question[] = [
         label: "Securing systems & ethical penetration testing",
         description: "Finding vulnerabilities, hardening protocols, and stopping cyber attacks.",
         track: "Cybersecurity",
-        points: { Cybersecurity: 35, "Cloud Computing": 10, DevOps: 15 },
+        points: { Cybersecurity: 35, Backend: 10, "Database (SQL)": 10 },
       },
       {
-        label: "Designing resilient cloud backends & pipelines",
-        description: "Scaling databases, containerizing apps with Docker/Kubernetes, and CI/CD.",
-        track: "DevOps & Cloud",
-        points: { DevOps: 35, "Cloud Computing": 30, Cybersecurity: 15 },
+        label: "Building the engine behind apps: APIs, servers & data",
+        description: "Designing REST APIs, business logic, and well-structured SQL databases.",
+        track: "Backend",
+        points: { Backend: 35, "Database (SQL)": 20, Fullstack: 15 },
       },
       {
-        label: "Building intuitive, high-performance web & mobile interfaces",
-        description: "Crafting polished user experiences with React, Next.js, and Flutter.",
-        track: "Frontend & Mobile Dev",
-        points: { "Frontend & Mobile": 35, "UI/UX Design": 20 },
+        label: "Crafting interfaces people love to use",
+        description: "User research, wireframes, Figma prototypes, and polished web UIs.",
+        track: "Frontend & UI/UX",
+        points: { "UI/UX": 30, Frontend: 30, Fullstack: 10 },
       },
       {
-        label: "Training AI models & deriving intelligence from data",
-        description: "Machine learning, Python data pipelines, and predictive algorithms.",
-        track: "AI & Data Science",
-        points: { "AI & Data Science": 35, "Cloud Computing": 10 },
+        label: "Shipping apps people carry in their pocket",
+        description: "Building Android & iOS apps with Flutter, Kotlin, or React Native.",
+        track: "Mobile Dev",
+        points: { "Mobile Dev": 35, Frontend: 10, "UI/UX": 10 },
       },
     ],
   },
@@ -63,25 +63,25 @@ const questions: Question[] = [
         label: "Deconstructing systems & analyzing network packets",
         description: "Wireshark, Burp Suite, Linux bash scripting, and reverse engineering.",
         track: "Cybersecurity",
-        points: { Cybersecurity: 30, DevOps: 15 },
+        points: { Cybersecurity: 30, Backend: 10 },
       },
       {
-        label: "Automating cloud infrastructure as code (IaC)",
-        description: "Terraform, AWS/GCP, GitHub Actions, and container orchestration.",
-        track: "DevOps & Cloud",
-        points: { DevOps: 30, "Cloud Computing": 25 },
+        label: "Writing queries & designing database schemas",
+        description: "PostgreSQL, MySQL, joins, indexing, normalization, and query tuning.",
+        track: "Database (SQL)",
+        points: { "Database (SQL)": 35, Backend: 15 },
       },
       {
         label: "Turning Figma designs into pixel-perfect interactive web apps",
         description: "Component architecture, animations, responsive design, and API integration.",
-        track: "Frontend & Mobile Dev",
-        points: { "Frontend & Mobile": 30, "UI/UX Design": 25 },
+        track: "Frontend",
+        points: { Frontend: 30, "UI/UX": 20, Fullstack: 10 },
       },
       {
-        label: "Exploratory data analysis and model fine-tuning",
-        description: "Pandas, PyTorch, Scikit-learn, and building data visualizations.",
-        track: "AI & Data Science",
-        points: { "AI & Data Science": 30, "Cloud Computing": 10 },
+        label: "Building a feature end-to-end, from database to UI",
+        description: "Next.js, Node.js, SQL, auth, and deploying the whole thing yourself.",
+        track: "Fullstack",
+        points: { Fullstack: 35, Backend: 10, Frontend: 10 },
       },
     ],
   },
@@ -94,39 +94,43 @@ const questions: Question[] = [
         label: "SIWES / Tech Internship Placement",
         description: "Prepare an industry-grade portfolio and pass technical interviews.",
         track: "General",
-        points: { Cybersecurity: 25, "Cloud Computing": 25, DevOps: 25, "Frontend & Mobile": 25, "AI & Data Science": 25 },
+        points: { Fullstack: 25, Frontend: 20, Backend: 20, "Mobile Dev": 20 },
       },
       {
         label: "High-Distinction Final Year Project (FYP)",
         description: "Build a robust, novel computational system with academic rigor.",
         track: "General",
-        points: { Cybersecurity: 20, "Cloud Computing": 20, "AI & Data Science": 30, DevOps: 20 },
+        points: { Fullstack: 20, "Database (SQL)": 20, Cybersecurity: 20, "Mobile Dev": 20 },
       },
       {
         label: "International Remote Job Readiness",
         description: "Master modern production standards and real-world team collaboration.",
         track: "General",
-        points: { DevOps: 30, "Frontend & Mobile": 25, Cybersecurity: 25 },
+        points: { Backend: 25, Frontend: 25, "UI/UX": 20, Cybersecurity: 20 },
       },
       {
         label: "Foundational Mastery (100L - 200L)",
         description: "Bridge university theory with practical software engineering skills.",
         track: "General",
-        points: { "Frontend & Mobile": 30, "Cloud Computing": 20, Cybersecurity: 20 },
+        points: { Frontend: 25, "Database (SQL)": 20, "UI/UX": 20 },
       },
     ],
   },
 ];
 
+const INITIAL_SCORES = {
+  "Mobile Dev": 15,
+  Cybersecurity: 15,
+  Frontend: 15,
+  Backend: 15,
+  "UI/UX": 15,
+  "Database (SQL)": 15,
+  Fullstack: 20,
+};
+
 export default function QuizModal({ isOpen, onClose }: QuizModalProps) {
   const [step, setStep] = useState(0);
-  const [scores, setScores] = useState<{ [key: string]: number }>({
-    Cybersecurity: 20,
-    "Cloud Computing": 15,
-    DevOps: 15,
-    "Frontend & Mobile": 15,
-    "AI & Data Science": 15,
-  });
+  const [scores, setScores] = useState<{ [key: string]: number }>(INITIAL_SCORES);
   const [isCalculating, setIsCalculating] = useState(false);
   const [result, setResult] = useState<{
     topTrack: string;
@@ -191,13 +195,7 @@ export default function QuizModal({ isOpen, onClose }: QuizModalProps) {
 
   const handleReset = () => {
     setStep(0);
-    setScores({
-      Cybersecurity: 20,
-      "Cloud Computing": 15,
-      DevOps: 15,
-      "Frontend & Mobile": 15,
-      "AI & Data Science": 15,
-    });
+    setScores(INITIAL_SCORES);
     setResult(null);
     setIsCalculating(false);
   };
