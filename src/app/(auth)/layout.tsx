@@ -30,12 +30,12 @@ export default function AuthLayout({
             Find the mentor who&apos;s already where you&apos;re going.
           </h1>
           <p className="text-paper/75 font-body leading-relaxed">
-            Mock auth for demos — use a demo chip or any seeded email. Sessions
-            persist in your browser until you sign out.
+            Sign in with your email. Mentors are reviewed and approved by
+            the NACOS academic committee.
           </p>
         </div>
         <p className="relative z-10 font-mono text-xs text-paper/50">
-          Demo mode · No real credentials stored
+          NACOS ABUAD · Skills Hub
         </p>
       </aside>
       <main className="flex flex-col justify-center px-6 py-12 sm:px-10 lg:px-16">

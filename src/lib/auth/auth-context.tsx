@@ -133,7 +133,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInAsDemo = useCallback(
     async (role: "mentee" | "mentor" | "admin"): Promise<ActionResult> => {
-      const { DEMO_ACCOUNTS, DEMO_PASSWORD } = await import("./demo-accounts");
+      const { DEMO_ACCOUNTS, DEMO_LOGIN_ENABLED, DEMO_PASSWORD } = await import("./demo-accounts");
+      if (!DEMO_LOGIN_ENABLED) return { ok: false, error: "Demo login is disabled." };
       return signIn(DEMO_ACCOUNTS[role].email, DEMO_PASSWORD);
     },
     [signIn]
@@ -176,30 +177,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return { ok: false, error: "Admin accounts cannot apply as mentors." };
         }
 
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .update({
-            role: "mentor",
-            mentor_status: "pending",
-            full_name: input.fullName.trim(),
-            matric_number: input.matricNumber.trim(),
-            level: input.level,
-            specialization: input.specialization,
-            track: input.specialization,
-          })
-          .eq("id", user.id);
-        if (profileError) return { ok: false, error: profileError.message };
-
-        const { error: appError } = await supabase.from("mentor_applications").insert({
-          user_id: user.id,
-          full_name: input.fullName.trim(),
-          email: user.email,
-          matric_number: input.matricNumber.trim(),
-          level: input.level,
-          specialization: input.specialization,
-          status: "pending",
+        // Role changes are blocked for direct profile updates (see
+        // guard_profile_update), so this goes through a security-definer RPC
+        // that flips the profile and files the application atomically.
+        const { error: applyError } = await supabase.rpc("apply_as_mentor", {
+          p_full_name: input.fullName.trim(),
+          p_matric_number: input.matricNumber.trim(),
+          p_level: input.level,
+          p_specialization: input.specialization,
         });
-        if (appError) return { ok: false, error: appError.message };
+        if (applyError) return { ok: false, error: applyError.message };
 
         await Promise.all([loadProfile(user.id), loadApplications()]);
         return { ok: true };

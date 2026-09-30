@@ -27,6 +27,7 @@ export default function MentorReviewsPage() {
   const [status, setStatus] = useState("all");
   const [reviews, setReviews] = useState<PrReview[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -60,11 +61,13 @@ export default function MentorReviewsPage() {
   );
 
   const advance = async (review: PrReview) => {
+    setError("");
     const supabase = createClient();
-    await supabase
+    const { error: updateError } = await supabase
       .from("pr_reviews")
       .update({ status: NEXT_STATUS[review.status] })
       .eq("id", review.id);
+    if (updateError) setError(updateError.message);
     await load();
   };
 
@@ -73,6 +76,7 @@ export default function MentorReviewsPage() {
       title="PR reviews"
       description="Async code teardown queue from your mentees."
     >
+      {error && <p className="text-sm text-red-600">{error}</p>}
       <FilterBar onReset={() => setStatus("all")}>
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-ink/45">Status</label>

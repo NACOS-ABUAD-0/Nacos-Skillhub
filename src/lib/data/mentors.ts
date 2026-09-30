@@ -48,3 +48,28 @@ export async function fetchMentorDirectory(): Promise<MentorDirectoryEntry[]> {
     };
   });
 }
+
+/** Mentor ids this mentee already has a match row with (any status). */
+export async function fetchMatchedMentorIds(menteeId: string): Promise<Set<string>> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("mentee_mentor_matches")
+    .select("mentor_id")
+    .eq("mentee_id", menteeId);
+  return new Set((data ?? []).map((m) => m.mentor_id));
+}
+
+/**
+ * Files a match request. Insert-only: an upsert here would reset an existing
+ * active match back to "requested".
+ */
+export async function requestMentorMatch(menteeId: string, mentorId: string): Promise<string | null> {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("mentee_mentor_matches")
+    .upsert(
+      { mentee_id: menteeId, mentor_id: mentorId, status: "requested" },
+      { onConflict: "mentee_id,mentor_id", ignoreDuplicates: true }
+    );
+  return error?.message ?? null;
+}

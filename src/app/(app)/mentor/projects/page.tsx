@@ -25,6 +25,7 @@ export default function MentorProjectsPage() {
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState("all");
   const [feedbackDraft, setFeedbackDraft] = useState<Record<string, string>>({});
+  const [error, setError] = useState("");
 
   const load = useCallback(async () => {
     const supabase = createClient();
@@ -64,14 +65,16 @@ export default function MentorProjectsPage() {
   const filtered = status === "all" ? submissions : submissions.filter((s) => s.status === status);
 
   const review = async (id: string, nextStatus: "approved" | "changes_requested") => {
+    setError("");
     const supabase = createClient();
-    await supabase
+    const { error: reviewError } = await supabase
       .from("mini_project_submissions")
       .update({
         status: nextStatus,
         mentor_feedback: feedbackDraft[id]?.trim() || null,
       })
       .eq("id", id);
+    if (reviewError) setError(reviewError.message);
     await load();
   };
 
@@ -85,6 +88,7 @@ export default function MentorProjectsPage() {
 
   return (
     <PageShell title="Mini-project reviews" description="Submissions from mentees in your track.">
+      {error && <p className="text-sm text-red-600">{error}</p>}
       <FilterBar onReset={() => setStatus("all")}>
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-ink/45">Status</label>

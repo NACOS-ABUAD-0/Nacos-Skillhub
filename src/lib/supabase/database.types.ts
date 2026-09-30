@@ -1,4 +1,4 @@
-// Hand-written to match supabase/migrations/0001_init.sql.
+// Hand-written to match supabase/migrations/ (0001–0003).
 // Once the project is provisioned, prefer regenerating with:
 //   npx supabase gen types typescript --project-id <ref> > src/lib/supabase/database.types.ts
 //
@@ -128,7 +128,9 @@ interface IssuedCertificateRow {
   track: string | null;
   signed_by: string | null;
   issued_at: string;
+  issued_by: string | null;
 }
+
 
 interface MessageThreadRow {
   id: string;
@@ -229,7 +231,17 @@ export interface Database {
       >;
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      apply_as_mentor: {
+        Args: {
+          p_full_name: string;
+          p_matric_number: string;
+          p_level: string;
+          p_specialization: string;
+        };
+        Returns: undefined;
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

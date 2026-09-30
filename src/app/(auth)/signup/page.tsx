@@ -63,7 +63,7 @@ export default function SignupPage() {
           Join Skills Hub
         </h2>
         <p className="text-ink/65 font-body text-sm">
-          Create a mentee profile with your ABUAD email.
+          Create a mentee profile to get matched with a mentor.
         </p>
       </div>
 
@@ -82,7 +82,7 @@ export default function SignupPage() {
         </div>
         <div className="space-y-1.5">
           <label className="font-mono text-xs uppercase tracking-wider text-ink/50">
-            ABUAD email
+            Email
           </label>
           <input
             type="email"

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { dashboardPathForUser } from "@/lib/auth/guards";
+import { DEMO_LOGIN_ENABLED } from "@/lib/auth/demo-accounts";
 
 export default function LoginPage() {
   const { user, isLoading, signIn, signInAsDemo } = useAuth();
@@ -34,7 +35,7 @@ export default function LoginPage() {
     // redirect via effect after user updates
   };
 
-  const demoLoginEnabled = process.env.NEXT_PUBLIC_ENABLE_DEMO_LOGIN === "true";
+  const demoLoginEnabled = DEMO_LOGIN_ENABLED;
 
   const enterDemo = async (role: "mentee" | "mentor" | "admin") => {
     setError("");
@@ -53,7 +54,7 @@ export default function LoginPage() {
           Welcome back
         </h2>
         <p className="text-ink/65 font-body text-sm">
-          Sign in with your ABUAD email or jump in with a demo role.
+          Sign in with your email{demoLoginEnabled ? " or jump in with a demo role" : ""}.
         </p>
       </div>
 
@@ -94,14 +95,14 @@ export default function LoginPage() {
         </div>
         <div className="space-y-1.5">
           <label className="font-mono text-xs uppercase tracking-wider text-ink/50">
-            Password or Matric Token
+            Password
           </label>
           <input
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Any value in demo mode"
+            placeholder="Your password"
             className="w-full rounded-xl border border-line bg-white px-4 py-3 text-sm outline-none focus:border-forest"
           />
         </div>

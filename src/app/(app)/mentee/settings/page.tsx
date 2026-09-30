@@ -18,10 +18,16 @@ export default function MenteeSettingsPage() {
   const [bio, setBio] = useState(user?.bio ?? "");
   const [track, setTrack] = useState(user?.track ?? "Fullstack");
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
 
-  const save = (e: React.FormEvent) => {
+  const save = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateProfile({ fullName, bio, track });
+    setError("");
+    const result = await updateProfile({ fullName, bio, track });
+    if (!result.ok) {
+      setError(result.error ?? "Could not save changes.");
+      return;
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -57,6 +63,7 @@ export default function MenteeSettingsPage() {
               className="w-full resize-none rounded-soft-sm bg-soft-muted px-3.5 py-3 text-sm outline-none focus:ring-2 focus:ring-forest/25"
             />
           </div>
+          {error && <p className="text-sm text-red-600">{error}</p>}
           <SoftButton type="submit">{saved ? "Saved" : "Save changes"}</SoftButton>
         </form>
       </SoftPanel>

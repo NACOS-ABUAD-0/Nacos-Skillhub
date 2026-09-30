@@ -11,8 +11,12 @@ import {
   EmptyState,
 } from "@/components/app/ui";
 import { useAuth } from "@/lib/auth/auth-context";
-import { createClient } from "@/lib/supabase/client";
-import { fetchMentorDirectory, type MentorDirectoryEntry } from "@/lib/data/mentors";
+import {
+  fetchMatchedMentorIds,
+  fetchMentorDirectory,
+  requestMentorMatch,
+  type MentorDirectoryEntry,
+} from "@/lib/data/mentors";
 import { useTracks } from "@/lib/data/tracks";
 
 export default function MenteeMentorsPage() {
@@ -22,6 +26,11 @@ export default function MenteeMentorsPage() {
   const [mentors, setMentors] = useState<MentorDirectoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [requestedIds, setRequestedIds] = useState<Set<string>>(new Set());
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (user) fetchMatchedMentorIds(user.id).then(setRequestedIds);
+  }, [user]);
 
   useEffect(() => {
     fetchMentorDirectory().then((m) => {
@@ -37,13 +46,12 @@ export default function MenteeMentorsPage() {
 
   const requestMatch = async (mentorId: string) => {
     if (!user) return;
-    const supabase = createClient();
-    await supabase
-      .from("mentee_mentor_matches")
-      .upsert(
-        { mentee_id: user.id, mentor_id: mentorId, status: "requested" },
-        { onConflict: "mentee_id,mentor_id" }
-      );
+    setError("");
+    const err = await requestMentorMatch(user.id, mentorId);
+    if (err) {
+      setError(err);
+      return;
+    }
     setRequestedIds((prev) => new Set(prev).add(mentorId));
   };
 
@@ -52,6 +60,7 @@ export default function MenteeMentorsPage() {
       title="Browse mentors"
       description="Filter verified mentors by specialization track."
     >
+      {error && <p className="text-sm text-red-600">{error}</p>}
       <FilterBar onReset={() => setTrack("All")}>
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-ink/45">Track</label>

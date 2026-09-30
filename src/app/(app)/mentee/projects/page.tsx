@@ -168,6 +168,11 @@ export default function MenteeProjectsPage() {
             </div>
           )}
 
+          {currentSubmission?.status === "approved" ? (
+            <p className="mt-5 border-t border-soft pt-5 text-sm text-ink/60">
+              Approved — nice work. Nothing more to submit this week.
+            </p>
+          ) : (
           <form onSubmit={submit} className="mt-5 space-y-3 border-t border-soft pt-5">
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-ink/45">Repo URL</label>
@@ -203,6 +208,7 @@ export default function MenteeProjectsPage() {
               )}
             </SoftButton>
           </form>
+          )}
         </SoftPanel>
       )}
 

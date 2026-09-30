@@ -3,22 +3,31 @@
 // NEXT_PUBLIC_ENABLE_DEMO_LOGIN=true). Safe to re-run — skips accounts that
 // already exist.
 //
+// Local/dev projects only — never run this against production: it creates an
+// admin account whose email is public in this repo.
+//
 // Usage:
-//   NEXT_PUBLIC_SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/seed-demo-users.mjs
+//   NEXT_PUBLIC_SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... DEMO_PASSWORD=... //     node scripts/seed-demo-users.mjs
+//
+// Use the same value for NEXT_PUBLIC_DEMO_PASSWORD in .env.local.
 
 import { createClient } from "@supabase/supabase-js";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const DEMO_PASSWORD = process.env.DEMO_PASSWORD;
 
-if (!url || !serviceKey) {
+if (!url || !serviceKey || !DEMO_PASSWORD) {
   console.error(
-    "Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY before running this script."
+    "Set NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY and DEMO_PASSWORD before running this script."
   );
   process.exit(1);
 }
 
-const DEMO_PASSWORD = "NacosDemo123!";
+if (DEMO_PASSWORD.length < 12) {
+  console.error("DEMO_PASSWORD must be at least 12 characters.");
+  process.exit(1);
+}
 
 const admin = createClient(url, serviceKey, {
   auth: { autoRefreshToken: false, persistSession: false },
@@ -95,4 +104,4 @@ for (const account of accounts) {
   }
 }
 
-console.log("Done. Demo password for all accounts:", DEMO_PASSWORD);
+console.log("Done. Demo accounts use the DEMO_PASSWORD you provided.");
