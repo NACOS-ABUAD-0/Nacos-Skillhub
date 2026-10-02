@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth/auth-context";
-import type { MockUser } from "@/lib/auth/types";
+import type { MockUser, UserRole } from "@/lib/auth/types";
+import { useTracks, type TrackOption } from "@/lib/data/tracks";
 import {
   PageShell,
   SoftPanel,
@@ -11,12 +12,15 @@ import {
   SoftSelect,
   DataTable,
   StatusBadge,
+  SoftButton,
   type Column,
 } from "@/components/app/ui";
 
 export default function AdminUsersPage() {
-  const { getAllUsers } = useAuth();
+  const { user: me, getAllUsers, setUserRole } = useAuth();
   const users = getAllUsers();
+  const tracks = useTracks();
+  const [error, setError] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [role, setRole] = useState("all");
 
@@ -42,7 +46,18 @@ export default function AdminUsersPage() {
     {
       key: "role",
       header: "Role",
-      render: (u) => <StatusBadge tone="info">{u.role}</StatusBadge>,
+      render: (u) => (
+        <RoleEditor
+          user={u}
+          tracks={tracks}
+          isSelf={u.id === me?.id}
+          onSave={async (role, track) => {
+            setError(null);
+            const res = await setUserRole(u.id, role, track);
+            if (!res.ok) setError(res.error ?? "Could not update role.");
+          }}
+        />
+      ),
     },
     {
       key: "mentorStatus",
@@ -73,7 +88,10 @@ export default function AdminUsersPage() {
   ];
 
   return (
-    <PageShell title="Users" description="All accounts in the mock store.">
+    <PageShell title="Users" description="All accounts. Change a user's role or track from the Role column.">
+      {error && (
+        <p className="rounded-soft-sm bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
+      )}
       <FilterBar onReset={() => { setQ(""); setRole("all"); }}>
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-ink/45">Search</label>
@@ -105,5 +123,69 @@ export default function AdminUsersPage() {
         />
       </SoftPanel>
     </PageShell>
+  );
+}
+
+function RoleEditor({
+  user,
+  tracks,
+  isSelf,
+  onSave,
+}: {
+  user: MockUser;
+  tracks: TrackOption[];
+  isSelf: boolean;
+  onSave: (role: UserRole, track?: string) => Promise<void>;
+}) {
+  const [role, setRole] = useState<UserRole>(user.role);
+  const [track, setTrack] = useState(user.track ?? "");
+  const [saving, setSaving] = useState(false);
+  const dirty = role !== user.role || track !== (user.track ?? "");
+
+  if (isSelf) {
+    return <StatusBadge tone="info">{user.role} (you)</StatusBadge>;
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <SoftSelect
+        value={role}
+        onChange={(e) => setRole(e.target.value as UserRole)}
+        className="h-9 min-w-[110px]"
+        aria-label={`Role for ${user.fullName}`}
+      >
+        <option value="mentee">Mentee</option>
+        <option value="mentor">Mentor</option>
+        <option value="admin">Admin</option>
+      </SoftSelect>
+      {role !== "admin" && (
+        <SoftSelect
+          value={track}
+          onChange={(e) => setTrack(e.target.value)}
+          className="h-9 min-w-[130px]"
+          aria-label={`Track for ${user.fullName}`}
+        >
+          <option value="">No track</option>
+          {tracks.map((t) => (
+            <option key={t.id} value={t.name}>
+              {t.name}
+            </option>
+          ))}
+        </SoftSelect>
+      )}
+      {dirty && (
+        <SoftButton
+          className="h-9"
+          disabled={saving || (role === "mentor" && !track)}
+          onClick={async () => {
+            setSaving(true);
+            await onSave(role, role === "admin" ? undefined : track || undefined);
+            setSaving(false);
+          }}
+        >
+          {saving ? "Saving…" : "Save"}
+        </SoftButton>
+      )}
+    </div>
   );
 }

@@ -43,6 +43,7 @@ export const metadata: Metadata = {
     "UI/UX",
     "SQL",
     "Fullstack",
+    "DevOps",
   ],
   authors: [{ name: "NACOS Skills Hub Initiative" }],
   openGraph: {

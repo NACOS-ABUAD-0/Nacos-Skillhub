@@ -42,6 +42,7 @@ const QUESTIONS = [
       { label: "React / Next.js", track: "Frontend" },
       { label: "Flutter / React Native", track: "Mobile Dev" },
       { label: "Node.js / Django", track: "Backend" },
+      { label: "Docker / GitHub Actions", track: "DevOps" },
     ],
   },
   {
@@ -50,6 +51,7 @@ const QUESTIONS = [
     options: [
       { label: "Ship a product end-to-end", track: "Fullstack" },
       { label: "Publish an app to the Play Store", track: "Mobile Dev" },
+      { label: "Automate deploys with a CI/CD pipeline", track: "DevOps" },
       { label: "Earn a security certification", track: "Cybersecurity" },
       { label: "Internship-ready web portfolio", track: "Fullstack" },
     ],

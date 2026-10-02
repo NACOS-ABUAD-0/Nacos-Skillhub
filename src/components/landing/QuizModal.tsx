@@ -38,7 +38,7 @@ const questions: Question[] = [
         label: "Building the engine behind apps: APIs, servers & data",
         description: "Designing REST APIs, business logic, and well-structured SQL databases.",
         track: "Backend",
-        points: { Backend: 35, "Database (SQL)": 20, Fullstack: 15 },
+        points: { Backend: 35, "Database (SQL)": 20, Fullstack: 15, DevOps: 10 },
       },
       {
         label: "Crafting interfaces people love to use",
@@ -63,7 +63,7 @@ const questions: Question[] = [
         label: "Deconstructing systems & analyzing network packets",
         description: "Wireshark, Burp Suite, Linux bash scripting, and reverse engineering.",
         track: "Cybersecurity",
-        points: { Cybersecurity: 30, Backend: 10 },
+        points: { Cybersecurity: 30, Backend: 10, DevOps: 15 },
       },
       {
         label: "Writing queries & designing database schemas",
@@ -81,7 +81,7 @@ const questions: Question[] = [
         label: "Building a feature end-to-end, from database to UI",
         description: "Next.js, Node.js, SQL, auth, and deploying the whole thing yourself.",
         track: "Fullstack",
-        points: { Fullstack: 35, Backend: 10, Frontend: 10 },
+        points: { Fullstack: 35, Backend: 10, Frontend: 10, DevOps: 15 },
       },
     ],
   },
@@ -106,7 +106,7 @@ const questions: Question[] = [
         label: "International Remote Job Readiness",
         description: "Master modern production standards and real-world team collaboration.",
         track: "General",
-        points: { Backend: 25, Frontend: 25, "UI/UX": 20, Cybersecurity: 20 },
+        points: { Backend: 25, Frontend: 25, "UI/UX": 20, Cybersecurity: 20, DevOps: 20 },
       },
       {
         label: "Foundational Mastery (100L - 200L)",
@@ -126,6 +126,7 @@ const INITIAL_SCORES = {
   "UI/UX": 15,
   "Database (SQL)": 15,
   Fullstack: 20,
+  DevOps: 15,
 };
 
 export default function QuizModal({ isOpen, onClose }: QuizModalProps) {

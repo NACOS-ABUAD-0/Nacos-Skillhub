@@ -71,6 +71,7 @@ const skillTags = [
   "UI/UX Design",
   "Database (SQL)",
   "Fullstack",
+  "DevOps",
 ];
 
 export default function Hero({ onOpenQuiz, onOpenAuth }: HeroProps) {

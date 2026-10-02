@@ -10,9 +10,10 @@ import React, {
 } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { approveMentorApplication, rejectMentorApplication } from "@/lib/actions/mentor-applications";
+import { updateUserRole } from "@/lib/actions/users";
 import { mapApplication, mapProfile } from "./mappers";
 import type { MentorApplication } from "./application-types";
-import type { MockUser } from "./types";
+import type { MockUser, UserRole } from "./types";
 
 export type { MentorApplication } from "./application-types";
 
@@ -49,6 +50,7 @@ interface AuthContextValue {
   approveApplication: (id: string) => Promise<void>;
   rejectApplication: (id: string) => Promise<void>;
   getAllUsers: () => MockUser[];
+  setUserRole: (userId: string, role: UserRole, track?: string) => Promise<ActionResult>;
   refreshUser: () => Promise<void>;
 }
 
@@ -274,6 +276,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [loadApplications, loadAllUsers, loadProfile, user]
   );
 
+  const setUserRole = useCallback(
+    async (userId: string, role: UserRole, track?: string): Promise<ActionResult> => {
+      try {
+        await updateUserRole(userId, role, track);
+      } catch (e) {
+        return { ok: false, error: e instanceof Error ? e.message : "Could not update role." };
+      }
+      await loadAllUsers();
+      return { ok: true };
+    },
+    [loadAllUsers]
+  );
+
   const refreshUser = useCallback(async () => {
     if (!user) return;
     await loadProfile(user.id);
@@ -293,6 +308,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       approveApplication,
       rejectApplication,
       getAllUsers,
+      setUserRole,
       refreshUser,
     }),
     [
@@ -308,6 +324,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       approveApplication,
       rejectApplication,
       getAllUsers,
+      setUserRole,
       refreshUser,
     ]
   );
