@@ -76,7 +76,7 @@ const mentors: Mentor[] = [
   },
 ];
 
-const filterCategories = ["All Tracks", "Mobile Dev", "Cybersecurity", "Frontend", "Backend", "UI/UX", "Database (SQL)", "Fullstack", "DevOps"];
+const filterCategories = ["All Tracks", "Mobile Dev", "Cybersecurity", "Frontend", "Backend", "UI/UX", "Database (SQL)", "Fullstack", "DevOps", "Machine Learning"];
 
 export default function MentorPreview({ onOpenAuth }: MentorPreviewProps) {
   const [selectedFilter, setSelectedFilter] = useState("All Tracks");

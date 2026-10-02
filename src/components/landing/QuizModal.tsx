@@ -38,7 +38,7 @@ const questions: Question[] = [
         label: "Building the engine behind apps: APIs, servers & data",
         description: "Designing REST APIs, business logic, and well-structured SQL databases.",
         track: "Backend",
-        points: { Backend: 35, "Database (SQL)": 20, Fullstack: 15, DevOps: 10 },
+        points: { Backend: 35, "Database (SQL)": 20, Fullstack: 15, DevOps: 10, "Machine Learning": 10 },
       },
       {
         label: "Crafting interfaces people love to use",
@@ -83,6 +83,12 @@ const questions: Question[] = [
         track: "Fullstack",
         points: { Fullstack: 35, Backend: 10, Frontend: 10, DevOps: 15 },
       },
+      {
+        label: "Training models that learn from data",
+        description: "Python, NumPy, pandas, scikit-learn, PyTorch, and evaluating predictions.",
+        track: "Machine Learning",
+        points: { "Machine Learning": 35, "Database (SQL)": 10, Backend: 10 },
+      },
     ],
   },
   {
@@ -100,13 +106,13 @@ const questions: Question[] = [
         label: "High-Distinction Final Year Project (FYP)",
         description: "Build a robust, novel computational system with academic rigor.",
         track: "General",
-        points: { Fullstack: 20, "Database (SQL)": 20, Cybersecurity: 20, "Mobile Dev": 20 },
+        points: { Fullstack: 20, "Database (SQL)": 20, Cybersecurity: 20, "Mobile Dev": 20, "Machine Learning": 25 },
       },
       {
         label: "International Remote Job Readiness",
         description: "Master modern production standards and real-world team collaboration.",
         track: "General",
-        points: { Backend: 25, Frontend: 25, "UI/UX": 20, Cybersecurity: 20, DevOps: 20 },
+        points: { Backend: 25, Frontend: 25, "UI/UX": 20, Cybersecurity: 20, DevOps: 20, "Machine Learning": 20 },
       },
       {
         label: "Foundational Mastery (100L - 200L)",
@@ -127,6 +133,7 @@ const INITIAL_SCORES = {
   "Database (SQL)": 15,
   Fullstack: 20,
   DevOps: 15,
+  "Machine Learning": 15,
 };
 
 export default function QuizModal({ isOpen, onClose }: QuizModalProps) {

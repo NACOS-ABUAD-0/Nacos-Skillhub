@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Check, GraduationCap, Layers, ShieldCheck, Users } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
 import type { MockUser, UserRole } from "@/lib/auth/types";
 import { useTracks, type TrackOption } from "@/lib/data/tracks";
@@ -12,9 +13,15 @@ import {
   SoftSelect,
   DataTable,
   StatusBadge,
-  SoftButton,
   type Column,
 } from "@/components/app/ui";
+import { ColorDot, SoftDropdown, type DropdownOption } from "@/components/app/SoftDropdown";
+
+const ROLE_OPTIONS: DropdownOption<UserRole>[] = [
+  { value: "mentee", label: "Mentee", description: "Learns on a track", icon: <GraduationCap />, accent: "#2F6B8F" },
+  { value: "mentor", label: "Mentor", description: "Guides mentees, authors content", icon: <Users />, accent: "#16452E" },
+  { value: "admin", label: "Admin", description: "Full access to the hub", icon: <ShieldCheck />, accent: "#B4572E" },
+];
 
 export default function AdminUsersPage() {
   const { user: me, getAllUsers, setUserRole } = useAuth();
@@ -146,45 +153,50 @@ function RoleEditor({
     return <StatusBadge tone="info">{user.role} (you)</StatusBadge>;
   }
 
+  const trackOptions: DropdownOption<string>[] = [
+    { value: "", label: "No track", icon: <Layers /> },
+    ...tracks.map((t) => ({
+      value: t.name,
+      label: t.name,
+      icon: <ColorDot color={t.color ?? "#16452E"} />,
+      accent: t.color ?? undefined,
+    })),
+  ];
+
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <SoftSelect
+      <SoftDropdown
         value={role}
-        onChange={(e) => setRole(e.target.value as UserRole)}
-        className="h-9 min-w-[110px]"
-        aria-label={`Role for ${user.fullName}`}
-      >
-        <option value="mentee">Mentee</option>
-        <option value="mentor">Mentor</option>
-        <option value="admin">Admin</option>
-      </SoftSelect>
+        options={ROLE_OPTIONS}
+        onChange={setRole}
+        className="min-w-[124px]"
+        panelMinWidth={250}
+        ariaLabel={`Role for ${user.fullName}`}
+      />
       {role !== "admin" && (
-        <SoftSelect
+        <SoftDropdown
           value={track}
-          onChange={(e) => setTrack(e.target.value)}
-          className="h-9 min-w-[130px]"
-          aria-label={`Track for ${user.fullName}`}
-        >
-          <option value="">No track</option>
-          {tracks.map((t) => (
-            <option key={t.id} value={t.name}>
-              {t.name}
-            </option>
-          ))}
-        </SoftSelect>
+          options={trackOptions}
+          onChange={setTrack}
+          className="min-w-[150px]"
+          ariaLabel={`Track for ${user.fullName}`}
+        />
       )}
       {dirty && (
-        <SoftButton
-          className="h-9"
+        <button
+          type="button"
           disabled={saving || (role === "mentor" && !track)}
+          title={role === "mentor" && !track ? "Mentors need a track" : undefined}
           onClick={async () => {
             setSaving(true);
             await onSave(role, role === "admin" ? undefined : track || undefined);
             setSaving(false);
           }}
+          className="inline-flex h-9 items-center gap-1.5 rounded-full bg-forest px-3.5 text-sm font-medium text-white shadow-[0_2px_8px_-2px_rgba(22,69,46,0.45)] transition-all hover:bg-[var(--forest-light)] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-45"
         >
+          <Check className="h-4 w-4" aria-hidden />
           {saving ? "Saving…" : "Save"}
-        </SoftButton>
+        </button>
       )}
     </div>
   );

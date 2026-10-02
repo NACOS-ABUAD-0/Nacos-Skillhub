@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/client";
 export interface TrackOption {
   id: string;
   name: string;
+  color?: string | null;
 }
 
 /** Live track names for selects — falls back to an empty list until loaded. */
@@ -14,7 +15,7 @@ export function useTracks(): TrackOption[] {
     const supabase = createClient();
     supabase
       .from("tracks")
-      .select("id, name")
+      .select("id, name, color")
       .order("name")
       .then(({ data }) => setTracks(data ?? []));
   }, []);

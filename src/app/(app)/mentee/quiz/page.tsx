@@ -22,6 +22,7 @@ const QUESTIONS = [
       { label: "Finding and fixing security holes", track: "Cybersecurity" },
       { label: "Interfaces people love to use", track: "UI/UX" },
       { label: "Keeping data fast and reliable", track: "Database (SQL)" },
+      { label: "Teaching computers to learn from data", track: "Machine Learning" },
     ],
   },
   {
@@ -43,6 +44,7 @@ const QUESTIONS = [
       { label: "Flutter / React Native", track: "Mobile Dev" },
       { label: "Node.js / Django", track: "Backend" },
       { label: "Docker / GitHub Actions", track: "DevOps" },
+      { label: "Python / PyTorch", track: "Machine Learning" },
     ],
   },
   {
@@ -52,6 +54,7 @@ const QUESTIONS = [
       { label: "Ship a product end-to-end", track: "Fullstack" },
       { label: "Publish an app to the Play Store", track: "Mobile Dev" },
       { label: "Automate deploys with a CI/CD pipeline", track: "DevOps" },
+      { label: "Train and deploy an ML model", track: "Machine Learning" },
       { label: "Earn a security certification", track: "Cybersecurity" },
       { label: "Internship-ready web portfolio", track: "Fullstack" },
     ],
