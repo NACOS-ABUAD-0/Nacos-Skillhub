@@ -2,10 +2,16 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { Lock, LockOpen } from "lucide-react";
 import { PageShell, SoftPanel, DataTable, ProgressBar, StatusBadge, EmptyState, SoftButton, type Column } from "@/components/app/ui";
 import { MenteeProgressPanel } from "@/components/app/MenteeProgressPanel";
 import { useAuth } from "@/lib/auth/auth-context";
-import { fetchAssignedMentees, setMatchStatus, type AssignedMentee } from "@/lib/data/mentees";
+import {
+  fetchAssignedMentees,
+  setMatchStatus,
+  setMatricEditAccess,
+  type AssignedMentee,
+} from "@/lib/data/mentees";
 import type { MatchStatus } from "@/lib/supabase/database.types";
 
 export default function MentorMenteesPage() {
@@ -38,6 +44,19 @@ export default function MentorMenteesPage() {
     setBusyId(null);
   };
 
+  const toggleMatricAccess = async (m: AssignedMentee) => {
+    setBusyId(m.id);
+    setError(null);
+    const unlocked = !m.matricEditUnlocked;
+    const err = await setMatricEditAccess(m.id, unlocked);
+    if (err) setError(err);
+    else
+      setMentees((prev) =>
+        prev.map((x) => (x.id === m.id ? { ...x, matricEditUnlocked: unlocked } : x))
+      );
+    setBusyId(null);
+  };
+
   const columns: Column<AssignedMentee>[] = [
     {
       key: "name",
@@ -45,7 +64,15 @@ export default function MentorMenteesPage() {
       render: (m) => (
         <div>
           <p className="font-medium text-ink">{m.name}</p>
-          <p className="text-xs text-ink/45">{m.level}</p>
+          <p className="text-xs text-ink/45">
+            {m.level}
+            {m.matricNumber && (
+              <>
+                {" · "}
+                <span className="font-mono">{m.matricNumber}</span>
+              </>
+            )}
+          </p>
         </div>
       ),
     },
@@ -100,6 +127,26 @@ export default function MentorMenteesPage() {
             >
               Message
             </Link>
+            <SoftButton
+              variant={m.matricEditUnlocked ? "soft" : "ghost"}
+              disabled={busyId === m.id}
+              onClick={() => toggleMatricAccess(m)}
+              title={
+                m.matricEditUnlocked
+                  ? "Mentee can change their matric / JAMB number once. Click to lock again."
+                  : "Let this mentee replace their JAMB number with their matric number."
+              }
+            >
+              {m.matricEditUnlocked ? (
+                <>
+                  <LockOpen className="h-4 w-4" aria-hidden /> Matric unlocked
+                </>
+              ) : (
+                <>
+                  <Lock className="h-4 w-4" aria-hidden /> Unlock matric
+                </>
+              )}
+            </SoftButton>
           </div>
         ) : null,
     },

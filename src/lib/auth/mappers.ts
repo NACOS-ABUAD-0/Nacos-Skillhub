@@ -11,6 +11,7 @@ export function mapProfile(row: ProfileRow): MockUser {
     email: row.email,
     fullName: row.full_name,
     matricNumber: row.matric_number,
+    matricEditUnlocked: row.matric_edit_unlocked ?? false,
     role: row.role,
     mentorStatus: row.mentor_status,
     level: row.level ?? undefined,

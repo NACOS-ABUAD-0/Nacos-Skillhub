@@ -7,6 +7,8 @@ export interface MockUser {
   email: string;
   fullName: string;
   matricNumber: string;
+  /** A mentor has unlocked a one-time matric / JAMB number change. */
+  matricEditUnlocked: boolean;
   role: UserRole;
   mentorStatus: MentorStatus;
   level?: string;

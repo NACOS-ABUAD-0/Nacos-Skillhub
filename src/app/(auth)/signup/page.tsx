@@ -109,15 +109,19 @@ export default function SignupPage() {
         </div>
         <div className="space-y-1.5">
           <label className="font-mono text-xs uppercase tracking-wider text-ink/50">
-            Matric number
+            Matric / JAMB number
           </label>
           <input
             required
             value={matricNumber}
             onChange={(e) => setMatricNumber(e.target.value)}
             className="w-full rounded-xl border border-line bg-white px-4 py-3 text-sm outline-none focus:border-forest"
-            placeholder="22/CSE/001"
+            placeholder="22/CSE/001 or JAMB reg. no."
           />
+          <p className="text-xs text-ink/45">
+            100L without a matric number yet? Use your JAMB registration number; your mentor can
+            unlock it for you to update later.
+          </p>
         </div>
         <div className="space-y-1.5">
           <label className="font-mono text-xs uppercase tracking-wider text-ink/50">

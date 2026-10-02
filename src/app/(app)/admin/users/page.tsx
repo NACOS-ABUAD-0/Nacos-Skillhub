@@ -87,7 +87,7 @@ export default function AdminUsersPage() {
     },
     {
       key: "matricNumber",
-      header: "Matric",
+      header: "Matric / JAMB",
       render: (u) => (
         <span className="font-mono text-xs text-ink/50">{u.matricNumber}</span>
       ),
@@ -105,7 +105,7 @@ export default function AdminUsersPage() {
           <SoftInput
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Name, email, matric…"
+            placeholder="Name, email, matric/JAMB…"
           />
         </div>
         <div className="space-y-1.5">

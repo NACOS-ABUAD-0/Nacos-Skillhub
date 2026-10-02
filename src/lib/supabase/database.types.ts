@@ -31,6 +31,7 @@ interface ProfileRow {
   email: string;
   full_name: string;
   matric_number: string;
+  matric_edit_unlocked: boolean;
   role: UserRole;
   mentor_status: MentorStatus;
   level: string | null;
@@ -242,6 +243,10 @@ export interface Database {
           p_level: string;
           p_specialization: string;
         };
+        Returns: undefined;
+      };
+      set_matric_edit_access: {
+        Args: { p_mentee: string; p_unlocked: boolean };
         Returns: undefined;
       };
       mark_thread_read: {

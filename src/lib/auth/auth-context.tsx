@@ -240,6 +240,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const dbPatch: Record<string, unknown> = {};
       if (patch.fullName !== undefined) dbPatch.full_name = patch.fullName;
       if (patch.bio !== undefined) dbPatch.bio = patch.bio;
+      if (patch.matricNumber !== undefined) dbPatch.matric_number = patch.matricNumber.trim();
       if (patch.track !== undefined) dbPatch.track = patch.track;
       if (patch.level !== undefined) dbPatch.level = patch.level;
       if (patch.specialization !== undefined) dbPatch.specialization = patch.specialization;

@@ -7,6 +7,8 @@ export interface AssignedMentee {
   name: string;
   level: string;
   track: string;
+  matricNumber: string;
+  matricEditUnlocked: boolean;
   progress: number;
   nextMilestone: string;
   matchStatus: MatchStatus;
@@ -25,7 +27,7 @@ export async function fetchAssignedMentees(mentorId: string): Promise<AssignedMe
   const menteeIds = matches.map((m) => m.mentee_id);
   const { data: profiles } = await supabase
     .from("profiles")
-    .select("id, full_name, level, track")
+    .select("id, full_name, level, track, matric_number, matric_edit_unlocked")
     .in("id", menteeIds);
 
   const tracks = [...new Set((profiles ?? []).map((p) => p.track).filter((t): t is string => !!t))];
@@ -42,6 +44,8 @@ export async function fetchAssignedMentees(mentorId: string): Promise<AssignedMe
       name: profile?.full_name ?? "Unknown",
       level: profile?.level ?? "—",
       track: profile?.track ?? "—",
+      matricNumber: profile?.matric_number ?? "",
+      matricEditUnlocked: profile?.matric_edit_unlocked ?? false,
       progress: summary.percent,
       nextMilestone: summary.next?.title ?? "—",
       matchStatus: match.status,
@@ -61,5 +65,15 @@ export async function setMatchStatus(
     .update({ status })
     .eq("mentor_id", mentorId)
     .eq("mentee_id", menteeId);
+  return error?.message ?? null;
+}
+
+/** Mentor lets an active mentee change their matric / JAMB number once (or revokes that). */
+export async function setMatricEditAccess(menteeId: string, unlocked: boolean): Promise<string | null> {
+  const supabase = createClient();
+  const { error } = await supabase.rpc("set_matric_edit_access", {
+    p_mentee: menteeId,
+    p_unlocked: unlocked,
+  });
   return error?.message ?? null;
 }
