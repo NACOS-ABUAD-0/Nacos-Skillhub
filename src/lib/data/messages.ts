@@ -23,7 +23,7 @@ export interface Conversation {
   messages: ThreadMessage[];
 }
 
-export async function fetchConversations(userId: string): Promise<Conversation[]> {
+export async function fetchConversations(userId: string, includeAllProfiles = false): Promise<Conversation[]> {
   const supabase = createClient();
   const [{ data: threads }, { data: matches }] = await Promise.all([
     supabase
@@ -37,6 +37,16 @@ export async function fetchConversations(userId: string): Promise<Conversation[]
       .or(`mentor_id.eq.${userId},mentee_id.eq.${userId}`),
   ]);
 
+  let allProfiles: { id: string; full_name: string; role: string }[] | null = null;
+  if (includeAllProfiles) {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id, full_name, role")
+      .neq("id", userId);
+    if (error) throw new Error(error.message);
+    allProfiles = data;
+  }
+
   const threadByPeer = new Map(
     (threads ?? []).map((t) => [t.participant_a === userId ? t.participant_b : t.participant_a, t.id])
   );
@@ -44,12 +54,15 @@ export async function fetchConversations(userId: string): Promise<Conversation[]
     ...new Set([
       ...threadByPeer.keys(),
       ...(matches ?? []).map((m) => (m.mentor_id === userId ? m.mentee_id : m.mentor_id)),
+      ...(allProfiles ?? []).map((profile) => profile.id),
     ]),
   ];
   if (!peerIds.length) return [];
 
   const [{ data: peers }, { data: allMessages }] = await Promise.all([
-    supabase.from("profiles").select("id, full_name, role").in("id", peerIds),
+    allProfiles
+      ? Promise.resolve({ data: allProfiles })
+      : supabase.from("profiles").select("id, full_name, role").in("id", peerIds),
     supabase
       .from("messages")
       .select("*")
@@ -134,7 +147,7 @@ export async function getOrCreateThread(userId: string, peerId: string): Promise
   if (error || !created) {
     throw new Error(
       error?.code === "42501"
-        ? "You can only message people you're actively matched with."
+        ? "You don't have permission to start this conversation."
         : error?.message ?? "Failed to start conversation."
     );
   }

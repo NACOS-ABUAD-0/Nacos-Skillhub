@@ -19,9 +19,11 @@ const POLL_MS = 15000;
 export function MessagesView({
   description,
   emptyDescription,
+  includeAllProfiles = false,
 }: {
   description: string;
   emptyDescription: string;
+  includeAllProfiles?: boolean;
 }) {
   const { user } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -34,7 +36,7 @@ export function MessagesView({
 
   const load = useCallback(async () => {
     if (!user) return;
-    const list = await fetchConversations(user.id);
+    const list = await fetchConversations(user.id, includeAllProfiles);
     setConversations(list);
     setActivePeerId((current) => {
       if (current && list.some((c) => c.peerId === current)) return current;
@@ -43,7 +45,7 @@ export function MessagesView({
       return list.find((c) => c.peerId === wanted)?.peerId ?? list[0]?.peerId ?? null;
     });
     setLoading(false);
-  }, [user]);
+  }, [user, includeAllProfiles]);
 
   useEffect(() => {
     if (!user) return;

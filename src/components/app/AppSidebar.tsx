@@ -117,6 +117,7 @@ export function adminNav(): NavGroup[] {
         { href: "/admin/applications", label: "Applications", icon: ClipboardList },
         { href: "/admin/users", label: "Users", icon: Users },
         { href: "/admin/mentors", label: "Mentors", icon: Shield },
+        { href: "/admin/messages", label: "Messages", icon: MessageSquare },
       ],
     },
     {
